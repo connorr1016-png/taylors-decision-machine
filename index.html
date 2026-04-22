@@ -3,460 +3,532 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Taylor's Decision Machine</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<title>Taylor's Decision Machine 3000</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:ital,wght@0,700;1,400&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
   :root {
-    --cream: #faf6ef;
-    --warm-white: #fffcf7;
-    --ink: #1a1208;
-    --burgundy: #8b1a2e;
-    --gold: #c9973a;
-    --gold-light: #f0d090;
-    --blush: #e8b4b0;
-    --sage: #7a9e87;
-    --border: #d4c5a9;
+    --yellow: #FFE600;
+    --pink: #FF3CAC;
+    --cyan: #00F5FF;
+    --green: #39FF14;
+    --orange: #FF6B00;
+    --bg: #0a0a0a;
+    --card: #111111;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
-    background: var(--cream);
-    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    font-family: 'Nunito', sans-serif;
     min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 40px 20px 60px;
-    position: relative;
     overflow-x: hidden;
+    cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><text y='28' font-size='28'>✨</text></svg>"), auto;
   }
 
-  /* Decorative background pattern */
-  body::before {
-    content: '';
+  /* Animated grid background */
+  .grid-bg {
     position: fixed;
     inset: 0;
     background-image:
-      radial-gradient(circle at 15% 20%, rgba(201,151,58,0.08) 0%, transparent 40%),
-      radial-gradient(circle at 85% 75%, rgba(139,26,46,0.06) 0%, transparent 40%),
-      radial-gradient(circle at 50% 50%, rgba(122,158,135,0.05) 0%, transparent 60%);
+      linear-gradient(rgba(255,230,0,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,230,0,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: gridMove 20s linear infinite;
     pointer-events: none;
+  }
+  @keyframes gridMove {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(40px); }
   }
 
-  /* Corner ornaments */
-  .ornament {
+  /* Floating emojis */
+  .floaters {
     position: fixed;
-    font-size: 80px;
-    opacity: 0.06;
-    color: var(--burgundy);
-    font-family: 'Playfair Display', serif;
+    inset: 0;
     pointer-events: none;
+    overflow: hidden;
   }
-  .ornament.tl { top: -10px; left: -10px; }
-  .ornament.tr { top: -10px; right: -10px; transform: scaleX(-1); }
-  .ornament.bl { bottom: -10px; left: -10px; transform: scaleY(-1); }
-  .ornament.br { bottom: -10px; right: -10px; transform: scale(-1); }
+  .floater {
+    position: absolute;
+    font-size: 24px;
+    animation: float linear infinite;
+    opacity: 0.15;
+  }
+  @keyframes float {
+    0% { transform: translateY(110vh) rotate(0deg); opacity: 0; }
+    10% { opacity: 0.15; }
+    90% { opacity: 0.15; }
+    100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+  }
+
+  /* Main container */
+  .container {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 30px 20px 60px;
+    position: relative;
+    z-index: 1;
+  }
 
   /* Header */
   .header {
     text-align: center;
-    margin-bottom: 36px;
-    position: relative;
+    margin-bottom: 30px;
   }
 
-  .header-badge {
+  .top-badge {
     display: inline-block;
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
+    background: var(--yellow);
+    color: #000;
+    font-family: 'Bangers', cursive;
+    font-size: 13px;
     letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--gold);
-    border: 1px solid var(--gold-light);
-    padding: 5px 16px;
-    border-radius: 20px;
-    margin-bottom: 16px;
-    background: rgba(201,151,58,0.06);
+    padding: 4px 16px;
+    border-radius: 0;
+    transform: rotate(-2deg);
+    margin-bottom: 12px;
+    box-shadow: 3px 3px 0 var(--pink);
   }
 
   h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(38px, 7vw, 62px);
-    color: var(--ink);
-    line-height: 1.05;
-    letter-spacing: -1px;
+    font-family: 'Bangers', cursive;
+    font-size: clamp(48px, 12vw, 88px);
+    line-height: 0.9;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, var(--yellow) 0%, var(--pink) 50%, var(--cyan) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 30px rgba(255,60,172,0.4));
+    animation: titlePulse 3s ease-in-out infinite;
   }
-
-  h1 em {
-    font-style: italic;
-    color: var(--burgundy);
+  @keyframes titlePulse {
+    0%,100% { filter: drop-shadow(0 0 20px rgba(255,60,172,0.4)); }
+    50% { filter: drop-shadow(0 0 50px rgba(0,245,255,0.6)); }
   }
 
   .subtitle {
-    font-size: 14px;
-    color: #7a6a52;
-    margin-top: 10px;
-    font-weight: 300;
+    font-family: 'Comic Neue', cursive;
     font-style: italic;
-    letter-spacing: 0.3px;
+    color: rgba(255,255,255,0.5);
+    font-size: 14px;
+    margin-top: 10px;
   }
 
-  /* Divider */
-  .divider {
-    display: flex;
+  /* Shake hint */
+  .shake-hint {
+    display: inline-flex;
     align-items: center;
-    gap: 12px;
-    margin: 8px auto 32px;
-    width: 260px;
-  }
-  .divider-line { flex: 1; height: 1px; background: var(--border); }
-  .divider-diamond { width: 6px; height: 6px; background: var(--gold); transform: rotate(45deg); flex-shrink: 0; }
-
-  /* Main card */
-  .card {
-    background: var(--warm-white);
-    border: 1px solid var(--border);
+    gap: 8px;
+    background: rgba(57,255,20,0.1);
+    border: 1px dashed var(--green);
+    color: var(--green);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 6px 14px;
     border-radius: 4px;
-    padding: 40px 44px;
-    max-width: 640px;
-    width: 100%;
-    box-shadow: 0 2px 40px rgba(26,18,8,0.07), 0 1px 0 rgba(201,151,58,0.2) inset;
-    position: relative;
+    margin-top: 12px;
+    animation: blink 2s ease-in-out infinite;
   }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
+  /* Card */
+  .card {
+    background: var(--card);
+    border: 2px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
   .card::before {
     content: '';
     position: absolute;
-    top: 6px; left: 6px; right: -6px; bottom: -6px;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    z-index: -1;
-    opacity: 0.5;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--yellow), var(--pink), var(--cyan), var(--green));
+    background-size: 200% 100%;
+    animation: rainbowSlide 3s linear infinite;
+  }
+  @keyframes rainbowSlide {
+    0% { background-position: 0% 0; }
+    100% { background-position: 200% 0; }
   }
 
   .input-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 2.5px;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 10px;
+    font-family: 'Bangers', cursive;
+    font-size: 18px;
+    letter-spacing: 2px;
+    color: var(--yellow);
+    margin-bottom: 12px;
     display: block;
   }
 
   textarea {
     width: 100%;
-    min-height: 110px;
-    border: 1px solid var(--border);
-    border-radius: 3px;
-    background: var(--cream);
+    min-height: 100px;
+    background: rgba(255,255,255,0.04);
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
     padding: 14px 16px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    color: var(--ink);
+    font-family: 'Nunito', sans-serif;
+    font-size: 16px;
+    color: #fff;
     resize: vertical;
     outline: none;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s;
     line-height: 1.6;
   }
-  textarea::placeholder { color: #b8a888; font-style: italic; }
-  textarea:focus { border-color: var(--gold); }
+  textarea::placeholder { color: rgba(255,255,255,0.25); font-style: italic; }
+  textarea:focus {
+    border-color: var(--pink);
+    box-shadow: 0 0 20px rgba(255,60,172,0.2);
+  }
 
-  .btn {
-    display: block;
-    width: 100%;
-    margin-top: 20px;
+  /* Buttons */
+  .btn-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 18px;
+  }
+
+  .btn-main {
+    flex: 1;
     padding: 16px;
-    background: var(--burgundy);
-    color: var(--cream);
+    background: var(--yellow);
+    color: #000;
     border: none;
-    border-radius: 3px;
-    font-family: 'Playfair Display', serif;
-    font-size: 17px;
-    font-style: italic;
-    letter-spacing: 0.3px;
+    border-radius: 6px;
+    font-family: 'Bangers', cursive;
+    font-size: 22px;
+    letter-spacing: 2px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.15s;
+    box-shadow: 4px 4px 0 var(--orange);
     position: relative;
     overflow: hidden;
   }
-  .btn::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 60%);
+  .btn-main:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 var(--orange);
   }
-  .btn:hover { background: #6e1523; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(139,26,46,0.3); }
-  .btn:active { transform: translateY(0); }
-  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .btn-main:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 var(--orange);
+  }
+  .btn-main:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  .btn-connor {
+    padding: 16px 20px;
+    background: transparent;
+    color: var(--cyan);
+    border: 2px solid var(--cyan);
+    border-radius: 6px;
+    font-family: 'Bangers', cursive;
+    font-size: 16px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    box-shadow: 3px 3px 0 rgba(0,245,255,0.3);
+  }
+  .btn-connor:hover {
+    background: rgba(0,245,255,0.1);
+    transform: translate(-2px, -2px);
+    box-shadow: 5px 5px 0 rgba(0,245,255,0.3);
+  }
+  .btn-connor:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
   /* Loading */
   .loading {
     display: none;
     text-align: center;
-    padding: 32px 0 8px;
+    padding: 30px 0 10px;
   }
   .loading.visible { display: block; }
-  .loading-dots {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin-bottom: 14px;
-  }
-  .dot {
-    width: 8px; height: 8px;
-    background: var(--gold);
-    border-radius: 50%;
-    animation: pulse 1.2s ease-in-out infinite;
-  }
-  .dot:nth-child(2) { animation-delay: 0.2s; }
-  .dot:nth-child(3) { animation-delay: 0.4s; }
 
-  @keyframes pulse {
-    0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
-    40% { opacity: 1; transform: scale(1); }
+  .loading-emoji {
+    font-size: 48px;
+    display: block;
+    animation: spin 0.6s linear infinite;
   }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
-  .loading-text {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
+  .loading-msg {
+    color: var(--yellow);
+    font-family: 'Bangers', cursive;
+    font-size: 20px;
     letter-spacing: 2px;
-    text-transform: uppercase;
-    color: #9a8a6a;
-    animation: flicker 2s ease-in-out infinite;
+    margin-top: 10px;
+    animation: loadingFlip 1.5s ease-in-out infinite;
   }
-  @keyframes flicker { 0%,100%{opacity:0.6} 50%{opacity:1} }
+  @keyframes loadingFlip {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
 
   /* Result */
-  .result {
+  .result-card {
     display: none;
-    margin-top: 28px;
-    animation: fadeUp 0.5s ease forwards;
+    background: var(--card);
+    border: 2px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 28px 32px;
+    position: relative;
+    overflow: hidden;
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    margin-bottom: 16px;
   }
-  .result.visible { display: block; }
+  .result-card.visible { display: block; }
 
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .result-divider {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 24px;
-  }
-  .result-divider-line { flex: 1; height: 1px; background: var(--border); }
-  .result-divider-text {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: #b0a080;
+  @keyframes popIn {
+    0% { transform: scale(0.8) rotate(-3deg); opacity: 0; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
   }
 
-  .verdict-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 20px;
-    border-radius: 2px;
-    font-family: 'Playfair Display', serif;
-    font-size: 22px;
-    font-style: italic;
-    margin-bottom: 18px;
-    letter-spacing: 0.3px;
+  .verdict-huge {
+    font-family: 'Bangers', cursive;
+    font-size: clamp(64px, 18vw, 110px);
+    line-height: 1;
+    letter-spacing: 4px;
+    text-align: center;
+    margin-bottom: 6px;
+    animation: verdictBounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
   }
-  .verdict-badge.yes {
-    background: rgba(122,158,135,0.12);
-    border: 1px solid rgba(122,158,135,0.4);
-    color: var(--sage);
+  @keyframes verdictBounce {
+    0% { transform: scale(0); }
+    60% { transform: scale(1.1); }
+    100% { transform: scale(1); }
   }
-  .verdict-badge.no {
-    background: rgba(139,26,46,0.08);
-    border: 1px solid rgba(139,26,46,0.3);
-    color: var(--burgundy);
+  .verdict-huge.yes { color: var(--green); text-shadow: 0 0 40px rgba(57,255,20,0.6), 4px 4px 0 rgba(57,255,20,0.3); }
+  .verdict-huge.no { color: var(--pink); text-shadow: 0 0 40px rgba(255,60,172,0.6), 4px 4px 0 rgba(255,60,172,0.3); }
+  .verdict-huge.maybe { color: var(--yellow); text-shadow: 0 0 40px rgba(255,230,0,0.6), 4px 4px 0 rgba(255,230,0,0.3); }
+
+  .verdict-emoji {
+    text-align: center;
+    font-size: 36px;
+    margin-bottom: 16px;
+    animation: emojiWiggle 0.5s ease forwards 0.3s;
+    opacity: 0;
   }
-  .verdict-badge.maybe {
-    background: rgba(201,151,58,0.1);
-    border: 1px solid rgba(201,151,58,0.35);
-    color: var(--gold);
+  @keyframes emojiWiggle {
+    0% { transform: rotate(-15deg); opacity: 0; }
+    50% { transform: rotate(10deg); opacity: 1; }
+    100% { transform: rotate(0deg); opacity: 1; }
   }
 
   .result-text {
+    font-size: 16px;
+    line-height: 1.7;
+    color: rgba(255,255,255,0.85);
+    text-align: center;
+    font-weight: 700;
+  }
+
+  /* Connor's Hot Take */
+  .connor-card {
+    display: none;
+    background: rgba(0,245,255,0.05);
+    border: 2px solid var(--cyan);
+    border-radius: 8px;
+    padding: 22px 28px;
+    position: relative;
+    animation: slideIn 0.4s ease forwards;
+    margin-bottom: 16px;
+  }
+  .connor-card.visible { display: block; }
+  @keyframes slideIn {
+    from { transform: translateX(-20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  .connor-label {
+    font-family: 'Bangers', cursive;
+    font-size: 14px;
+    letter-spacing: 3px;
+    color: var(--cyan);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .connor-text {
     font-size: 15px;
-    line-height: 1.75;
-    color: #3a2e1e;
-    white-space: pre-wrap;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.8);
+    font-style: italic;
   }
 
-  .result-text strong {
-    color: var(--ink);
-    font-weight: 500;
+  /* Confetti canvas */
+  #confetti-canvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 999;
   }
 
-  /* Roast meter */
-  .roast-meter {
-    margin-top: 22px;
-    padding: 16px 18px;
-    background: rgba(201,151,58,0.06);
-    border: 1px solid var(--gold-light);
-    border-radius: 3px;
+  /* Shake animation */
+  @keyframes shakeAnim {
+    0%,100% { transform: translateX(0); }
+    10% { transform: translateX(-8px) rotate(-1deg); }
+    20% { transform: translateX(8px) rotate(1deg); }
+    30% { transform: translateX(-8px) rotate(-1deg); }
+    40% { transform: translateX(8px) rotate(1deg); }
+    50% { transform: translateX(-4px); }
+    60% { transform: translateX(4px); }
+    70% { transform: translateX(-2px); }
+    80% { transform: translateX(2px); }
   }
-  .roast-meter-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 8px;
-  }
-  .roast-bar-track {
-    height: 4px;
-    background: rgba(201,151,58,0.15);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-  .roast-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--gold-light), var(--gold), var(--burgundy));
-    border-radius: 2px;
-    width: 0%;
-    transition: width 1s ease 0.3s;
-  }
+  .shaking { animation: shakeAnim 0.6s ease; }
 
   /* Footer */
   .footer {
-    margin-top: 32px;
     text-align: center;
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 1.5px;
-    color: #b8a888;
+    color: rgba(255,255,255,0.2);
+    font-size: 11px;
+    letter-spacing: 2px;
     text-transform: uppercase;
-  }
-
-  /* Quirk pills */
-  .quirk-pills {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 6px;
-    margin-bottom: 24px;
-  }
-  .quirk-pill {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 1px;
-    padding: 4px 12px;
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    color: #8a7a5a;
-    background: rgba(212,197,169,0.2);
+    margin-top: 20px;
   }
 
   @media (max-width: 480px) {
-    .card { padding: 28px 22px; }
-    h1 { font-size: 34px; }
+    .card, .result-card, .connor-card { padding: 22px 18px; }
+    .btn-row { flex-direction: column; }
   }
 </style>
 </head>
 <body>
 
-<div class="ornament tl">❧</div>
-<div class="ornament tr">❧</div>
-<div class="ornament bl">❧</div>
-<div class="ornament br">❧</div>
+<canvas id="confetti-canvas"></canvas>
+<div class="grid-bg"></div>
+<div class="floaters" id="floaters"></div>
 
-<div class="header">
-  <div class="header-badge">Est. by Connor · For Taylor</div>
-  <h1>Taylor's<br><em>Decision Machine</em></h1>
-  <p class="subtitle">Because you'll research it for 45 minutes anyway</p>
-</div>
-
-<div class="divider">
-  <div class="divider-line"></div>
-  <div class="divider-diamond"></div>
-  <div class="divider-line"></div>
-</div>
-
-<div class="card">
-  <div class="quirk-pills">
-    <span class="quirk-pill">🔬 over-researcher</span>
-    <span class="quirk-pill">🤷 chronically indecisive</span>
-    <span class="quirk-pill">🧊 perpetually cold</span>
+<div class="container">
+  <div class="header">
+    <div class="top-badge">⚡ OFFICIAL & LEGALLY BINDING ⚡</div>
+    <h1>TAYLOR'S<br>DECISION<br>MACHINE</h1>
+    <p class="subtitle">for people who need 3 hours to pick a restaurant</p>
+    <div class="shake-hint">📱 SHAKE YOUR PHONE TO DECIDE</div>
   </div>
 
-  <label class="input-label">What are you considering, Taylor?</label>
-  <textarea id="question" placeholder="e.g. Should I reorganize the medicine cabinet tonight? Should I get a warm drink? Should I steal Connor's blanket again?"></textarea>
+  <div class="card" id="main-card">
+    <label class="input-label">🤔 WHAT ARE YOU OVERTHINKING NOW?</label>
+    <textarea id="question" placeholder="e.g. Should I reorganize my skincare shelf at 11pm? Should I steal Connor's blanket again? Should I research this decision for another hour?"></textarea>
 
-  <button class="btn" onclick="decide()" id="btn">✦ Consult the Machine ✦</button>
-
-  <div class="loading" id="loading">
-    <div class="loading-dots">
-      <div class="dot"></div>
-      <div class="dot"></div>
-      <div class="dot"></div>
+    <div class="btn-row">
+      <button class="btn-main" onclick="decide('oracle')" id="btn-main">🔮 DECIDE FOR ME</button>
+      <button class="btn-connor" onclick="decide('connor')" id="btn-connor">💬 CONNOR'S TAKE</button>
     </div>
-    <div class="loading-text">Consulting the oracle · cross-referencing 47 sources · calculating blanket impact</div>
+
+    <div class="loading" id="loading">
+      <span class="loading-emoji">🌀</span>
+      <div class="loading-msg" id="loading-msg">CONSULTING THE ORACLE...</div>
+    </div>
   </div>
 
-  <div class="result" id="result">
-    <div class="result-divider">
-      <div class="result-divider-line"></div>
-      <div class="result-divider-text">The Verdict</div>
-      <div class="result-divider-line"></div>
-    </div>
-    <div class="verdict-badge" id="verdict-badge"></div>
+  <div class="result-card" id="result-card">
+    <div class="verdict-huge" id="verdict-text"></div>
+    <div class="verdict-emoji" id="verdict-emoji"></div>
     <div class="result-text" id="result-text"></div>
-    <div class="roast-meter">
-      <div class="roast-meter-label">Roast Intensity</div>
-      <div class="roast-bar-track">
-        <div class="roast-bar-fill" id="roast-bar"></div>
-      </div>
-    </div>
   </div>
-</div>
 
-<div class="footer">Powered by questionable wisdom · Connor Corp™ · Canfield, OH</div>
+  <div class="connor-card" id="connor-card">
+    <div class="connor-label">💬 CONNOR'S HOT TAKE</div>
+    <div class="connor-text" id="connor-text"></div>
+  </div>
+
+  <div class="footer">Connor Corp™ · Canfield, OH · Est. Because Taylor Can't Decide</div>
+</div>
 
 <script>
-async function decide() {
+// Floating emojis
+const emojis = ['🤔','😂','💅','🧊','📚','❄️','🫤','😭','💀','✨','🙃','🤷'];
+const floaters = document.getElementById('floaters');
+emojis.forEach((e, i) => {
+  const el = document.createElement('div');
+  el.className = 'floater';
+  el.textContent = e;
+  el.style.left = `${Math.random() * 100}%`;
+  el.style.animationDuration = `${8 + Math.random() * 12}s`;
+  el.style.animationDelay = `${Math.random() * 10}s`;
+  floaters.appendChild(el);
+});
+
+// Loading messages
+const loadingMsgs = [
+  "CONSULTING THE ORACLE...",
+  "CROSS-REFERENCING 47 SOURCES...",
+  "CALCULATING BLANKET IMPACT...",
+  "ASKING THE UNIVERSE...",
+  "RUNNING INDECISION ANALYSIS...",
+  "CHECKING IF CONNOR AGREES...",
+];
+
+let loadingInterval;
+
+function startLoading(type) {
+  const loading = document.getElementById('loading');
+  const msg = document.getElementById('loading-msg');
+  loading.classList.add('visible');
+  let i = 0;
+  msg.textContent = loadingMsgs[0];
+  loadingInterval = setInterval(() => {
+    i = (i + 1) % loadingMsgs.length;
+    msg.textContent = loadingMsgs[i];
+  }, 800);
+}
+
+function stopLoading() {
+  document.getElementById('loading').classList.remove('visible');
+  clearInterval(loadingInterval);
+}
+
+async function decide(mode) {
   const question = document.getElementById('question').value.trim();
   if (!question) {
     document.getElementById('question').focus();
+    document.getElementById('main-card').classList.add('shaking');
+    setTimeout(() => document.getElementById('main-card').classList.remove('shaking'), 700);
     return;
   }
 
-  const btn = document.getElementById('btn');
-  const loading = document.getElementById('loading');
-  const result = document.getElementById('result');
+  document.getElementById('btn-main').disabled = true;
+  document.getElementById('btn-connor').disabled = true;
+  document.getElementById('result-card').classList.remove('visible');
+  document.getElementById('connor-card').classList.remove('visible');
 
-  btn.disabled = true;
-  result.classList.remove('visible');
-  loading.classList.add('visible');
-  document.getElementById('roast-bar').style.width = '0%';
+  startLoading(mode);
 
-  const systemPrompt = `You are Taylor's Decision Machine — a sassy, lovingly roasting oracle created by Taylor's husband Connor.
+  const isConnor = mode === 'connor';
 
-Taylor has three lovable quirks you must weave into your responses:
-1. She over-researches everything (she'll spend 45 minutes on a 5-minute decision)
-2. She's chronically indecisive (needs external validation constantly)
-3. She's always cold and steals blankets (especially Connor's)
+  const systemPrompt = isConnor
+    ? `You are Connor, Taylor's husband. You're giving your "hot take" on whatever Taylor is considering.
+You are:
+- Sarcastic but deeply loving
+- Chronically cold because Taylor steals your blanket every night
+- Slightly exasperated but completely devoted
+- Funny and direct — you cut through Taylor's overthinking immediately
+- You occasionally reference losing your blanket, Taylor's research spirals, or her inability to make decisions
 
-You give Taylor a verdict (YES / NO / MAYBE), followed by a short, warm, funny response (3-5 sentences) that:
-- Actually answers her question helpfully
-- Includes a loving roast tied to one or more of her quirks
-- Sounds like it's written by someone who adores her but also finds her hilarious
-- Is never mean, always affectionate and playful
-- May reference Connor occasionally as her very wise, very cold, very blanket-deprived husband
+Give a 2-3 sentence hot take as Connor. Be funny, warm, and a little snarky. Sound like a real husband texting his wife.
+No JSON needed. Just write the hot take directly. Keep it under 60 words.`
+    : `You are Taylor's Decision Machine — a chaotic, funny, meme-loving oracle.
 
-Respond ONLY in this exact JSON format, no markdown:
-{
-  "verdict": "YES" or "NO" or "MAYBE",
-  "response": "your funny, warm response here",
-  "roast_intensity": a number from 10 to 95 representing how spicy the roast is
-}`;
+Taylor has three iconic traits:
+1. She over-researches EVERYTHING (45 minutes minimum on any decision)
+2. She is chronically indecisive (needs external validation for everything)
+3. She is ALWAYS cold and steals Connor's blanket constantly
+
+Give a verdict (YES / NO / MAYBE) and a funny roast-y response.
+Be chaotic, use mild caps for emphasis, reference her quirks.
+Be loving but unhinged. 2-3 sentences max.
+
+Respond ONLY in this JSON (no markdown):
+{"verdict":"YES|NO|MAYBE","emoji":"one fun emoji","response":"your chaotic response","roast":"a short 1-sentence extra roast at the end"}`;
 
   try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -466,50 +538,106 @@ Respond ONLY in this exact JSON format, no markdown:
         model: "claude-sonnet-4-20250514",
         max_tokens: 1000,
         system: systemPrompt,
-        messages: [{ role: "user", content: `Taylor is asking: "${question}"` }]
+        messages: [{ role: "user", content: isConnor ? `Taylor is asking: "${question}"` : `Taylor is asking: "${question}"` }]
       })
     });
 
     const data = await res.json();
     const raw = data.content.map(b => b.text || '').join('');
-    const clean = raw.replace(/```json|```/g, '').trim();
-    const parsed = JSON.parse(clean);
+    stopLoading();
 
-    loading.classList.remove('visible');
+    if (isConnor) {
+      document.getElementById('connor-text').textContent = raw.trim();
+      document.getElementById('connor-card').classList.add('visible');
+    } else {
+      const clean = raw.replace(/```json|```/g, '').trim();
+      const parsed = JSON.parse(clean);
 
-    // Verdict badge
-    const badge = document.getElementById('verdict-badge');
-    const verdictMap = {
-      YES: { emoji: '✓', label: 'Yes, go for it', cls: 'yes' },
-      NO: { emoji: '✗', label: 'Absolutely not', cls: 'no' },
-      MAYBE: { emoji: '◈', label: 'The machine is conflicted', cls: 'maybe' }
-    };
-    const v = verdictMap[parsed.verdict] || verdictMap['MAYBE'];
-    badge.className = `verdict-badge ${v.cls}`;
-    badge.innerHTML = `<span>${v.emoji}</span> ${v.label}`;
+      const verdictEl = document.getElementById('verdict-text');
+      verdictEl.className = 'verdict-huge ' + parsed.verdict.toLowerCase();
+      verdictEl.textContent = parsed.verdict;
 
-    document.getElementById('result-text').textContent = parsed.response;
-    result.classList.add('visible');
+      document.getElementById('verdict-emoji').textContent = parsed.emoji || '🎯';
+      document.getElementById('result-text').innerHTML = `${parsed.response}<br><br><span style="color:rgba(255,255,255,0.45);font-size:13px;font-style:italic">${parsed.roast || ''}</span>`;
+      document.getElementById('result-card').classList.add('visible');
 
-    // Animate roast bar
-    setTimeout(() => {
-      document.getElementById('roast-bar').style.width = `${parsed.roast_intensity}%`;
-    }, 100);
-
+      if (parsed.verdict === 'YES') launchConfetti();
+    }
   } catch (err) {
-    loading.classList.remove('visible');
-    document.getElementById('verdict-badge').className = 'verdict-badge maybe';
-    document.getElementById('verdict-badge').innerHTML = '◈ Machine Error';
-    document.getElementById('result-text').textContent = "The oracle encountered an error — which, knowing Taylor, she'll spend 30 minutes researching why.";
-    result.classList.add('visible');
+    stopLoading();
+    document.getElementById('verdict-text').className = 'verdict-huge maybe';
+    document.getElementById('verdict-text').textContent = 'ERROR';
+    document.getElementById('verdict-emoji').textContent = '💀';
+    document.getElementById('result-text').textContent = "The machine broke. Typical. Taylor probably researched it too hard.";
+    document.getElementById('result-card').classList.add('visible');
   }
 
-  btn.disabled = false;
+  document.getElementById('btn-main').disabled = false;
+  document.getElementById('btn-connor').disabled = false;
 }
 
-document.getElementById('question').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) decide();
+// Shake to decide
+let lastX = null, lastY = null, lastZ = null;
+let shakeTimeout = null;
+
+window.addEventListener('devicemotion', (e) => {
+  const acc = e.accelerationIncludingGravity;
+  if (!acc) return;
+  const { x, y, z } = acc;
+  if (lastX === null) { lastX = x; lastY = y; lastZ = z; return; }
+  const delta = Math.abs(x - lastX) + Math.abs(y - lastY) + Math.abs(z - lastZ);
+  lastX = x; lastY = y; lastZ = z;
+  if (delta > 30 && !shakeTimeout) {
+    shakeTimeout = setTimeout(() => { shakeTimeout = null; }, 1500);
+    decide('oracle');
+  }
 });
+
+// Request motion permission on iOS
+document.addEventListener('click', async () => {
+  if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+    try { await DeviceMotionEvent.requestPermission(); } catch(e) {}
+  }
+}, { once: true });
+
+// Confetti
+function launchConfetti() {
+  const canvas = document.getElementById('confetti-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const pieces = Array.from({length: 120}, () => ({
+    x: Math.random() * canvas.width,
+    y: -20,
+    r: 4 + Math.random() * 8,
+    d: 1 + Math.random() * 3,
+    color: ['#FFE600','#FF3CAC','#00F5FF','#39FF14','#FF6B00'][Math.floor(Math.random()*5)],
+    swing: Math.random() * 10 - 5,
+    angle: Math.random() * 360,
+    spin: Math.random() * 4 - 2
+  }));
+
+  let frame = 0;
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    pieces.forEach(p => {
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.angle * Math.PI / 180);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.r/2, -p.r/2, p.r, p.r/1.5);
+      ctx.restore();
+      p.y += p.d;
+      p.x += Math.sin(frame * 0.05 + p.swing) * 1.5;
+      p.angle += p.spin;
+    });
+    frame++;
+    if (frame < 180) requestAnimationFrame(draw);
+    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+  draw();
+}
 </script>
 </body>
 </html>
