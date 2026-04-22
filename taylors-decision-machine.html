@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Taylor's Decision Machine</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #faf6ef;
+    --warm-white: #fffcf7;
+    --ink: #1a1208;
+    --burgundy: #8b1a2e;
+    --gold: #c9973a;
+    --gold-light: #f0d090;
+    --blush: #e8b4b0;
+    --sage: #7a9e87;
+    --border: #d4c5a9;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 60px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Decorative background pattern */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 15% 20%, rgba(201,151,58,0.08) 0%, transparent 40%),
+      radial-gradient(circle at 85% 75%, rgba(139,26,46,0.06) 0%, transparent 40%),
+      radial-gradient(circle at 50% 50%, rgba(122,158,135,0.05) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  /* Corner ornaments */
+  .ornament {
+    position: fixed;
+    font-size: 80px;
+    opacity: 0.06;
+    color: var(--burgundy);
+    font-family: 'Playfair Display', serif;
+    pointer-events: none;
+  }
+  .ornament.tl { top: -10px; left: -10px; }
+  .ornament.tr { top: -10px; right: -10px; transform: scaleX(-1); }
+  .ornament.bl { bottom: -10px; left: -10px; transform: scaleY(-1); }
+  .ornament.br { bottom: -10px; right: -10px; transform: scale(-1); }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 36px;
+    position: relative;
+  }
+
+  .header-badge {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    border: 1px solid var(--gold-light);
+    padding: 5px 16px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+    background: rgba(201,151,58,0.06);
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(38px, 7vw, 62px);
+    color: var(--ink);
+    line-height: 1.05;
+    letter-spacing: -1px;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--burgundy);
+  }
+
+  .subtitle {
+    font-size: 14px;
+    color: #7a6a52;
+    margin-top: 10px;
+    font-weight: 300;
+    font-style: italic;
+    letter-spacing: 0.3px;
+  }
+
+  /* Divider */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 8px auto 32px;
+    width: 260px;
+  }
+  .divider-line { flex: 1; height: 1px; background: var(--border); }
+  .divider-diamond { width: 6px; height: 6px; background: var(--gold); transform: rotate(45deg); flex-shrink: 0; }
+
+  /* Main card */
+  .card {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 40px 44px;
+    max-width: 640px;
+    width: 100%;
+    box-shadow: 0 2px 40px rgba(26,18,8,0.07), 0 1px 0 rgba(201,151,58,0.2) inset;
+    position: relative;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 6px; left: 6px; right: -6px; bottom: -6px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    z-index: -1;
+    opacity: 0.5;
+  }
+
+  .input-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 110px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background: var(--cream);
+    padding: 14px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    color: var(--ink);
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+    line-height: 1.6;
+  }
+  textarea::placeholder { color: #b8a888; font-style: italic; }
+  textarea:focus { border-color: var(--gold); }
+
+  .btn {
+    display: block;
+    width: 100%;
+    margin-top: 20px;
+    padding: 16px;
+    background: var(--burgundy);
+    color: var(--cream);
+    border: none;
+    border-radius: 3px;
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-style: italic;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 60%);
+  }
+  .btn:hover { background: #6e1523; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(139,26,46,0.3); }
+  .btn:active { transform: translateY(0); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  /* Loading */
+  .loading {
+    display: none;
+    text-align: center;
+    padding: 32px 0 8px;
+  }
+  .loading.visible { display: block; }
+  .loading-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .dot {
+    width: 8px; height: 8px;
+    background: var(--gold);
+    border-radius: 50%;
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes pulse {
+    0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+    40% { opacity: 1; transform: scale(1); }
+  }
+
+  .loading-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #9a8a6a;
+    animation: flicker 2s ease-in-out infinite;
+  }
+  @keyframes flicker { 0%,100%{opacity:0.6} 50%{opacity:1} }
+
+  /* Result */
+  .result {
+    display: none;
+    margin-top: 28px;
+    animation: fadeUp 0.5s ease forwards;
+  }
+  .result.visible { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .result-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .result-divider-line { flex: 1; height: 1px; background: var(--border); }
+  .result-divider-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #b0a080;
+  }
+
+  .verdict-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 20px;
+    border-radius: 2px;
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-style: italic;
+    margin-bottom: 18px;
+    letter-spacing: 0.3px;
+  }
+  .verdict-badge.yes {
+    background: rgba(122,158,135,0.12);
+    border: 1px solid rgba(122,158,135,0.4);
+    color: var(--sage);
+  }
+  .verdict-badge.no {
+    background: rgba(139,26,46,0.08);
+    border: 1px solid rgba(139,26,46,0.3);
+    color: var(--burgundy);
+  }
+  .verdict-badge.maybe {
+    background: rgba(201,151,58,0.1);
+    border: 1px solid rgba(201,151,58,0.35);
+    color: var(--gold);
+  }
+
+  .result-text {
+    font-size: 15px;
+    line-height: 1.75;
+    color: #3a2e1e;
+    white-space: pre-wrap;
+  }
+
+  .result-text strong {
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  /* Roast meter */
+  .roast-meter {
+    margin-top: 22px;
+    padding: 16px 18px;
+    background: rgba(201,151,58,0.06);
+    border: 1px solid var(--gold-light);
+    border-radius: 3px;
+  }
+  .roast-meter-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+  .roast-bar-track {
+    height: 4px;
+    background: rgba(201,151,58,0.15);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .roast-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold-light), var(--gold), var(--burgundy));
+    border-radius: 2px;
+    width: 0%;
+    transition: width 1s ease 0.3s;
+  }
+
+  /* Footer */
+  .footer {
+    margin-top: 32px;
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    color: #b8a888;
+    text-transform: uppercase;
+  }
+
+  /* Quirk pills */
+  .quirk-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 6px;
+    margin-bottom: 24px;
+  }
+  .quirk-pill {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    padding: 4px 12px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    color: #8a7a5a;
+    background: rgba(212,197,169,0.2);
+  }
+
+  @media (max-width: 480px) {
+    .card { padding: 28px 22px; }
+    h1 { font-size: 34px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="ornament tl">❧</div>
+<div class="ornament tr">❧</div>
+<div class="ornament bl">❧</div>
+<div class="ornament br">❧</div>
+
+<div class="header">
+  <div class="header-badge">Est. by Connor · For Taylor</div>
+  <h1>Taylor's<br><em>Decision Machine</em></h1>
+  <p class="subtitle">Because you'll research it for 45 minutes anyway</p>
+</div>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-diamond"></div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="card">
+  <div class="quirk-pills">
+    <span class="quirk-pill">🔬 over-researcher</span>
+    <span class="quirk-pill">🤷 chronically indecisive</span>
+    <span class="quirk-pill">🧊 perpetually cold</span>
+  </div>
+
+  <label class="input-label">What are you considering, Taylor?</label>
+  <textarea id="question" placeholder="e.g. Should I reorganize the medicine cabinet tonight? Should I get a warm drink? Should I steal Connor's blanket again?"></textarea>
+
+  <button class="btn" onclick="decide()" id="btn">✦ Consult the Machine ✦</button>
+
+  <div class="loading" id="loading">
+    <div class="loading-dots">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+    <div class="loading-text">Consulting the oracle · cross-referencing 47 sources · calculating blanket impact</div>
+  </div>
+
+  <div class="result" id="result">
+    <div class="result-divider">
+      <div class="result-divider-line"></div>
+      <div class="result-divider-text">The Verdict</div>
+      <div class="result-divider-line"></div>
+    </div>
+    <div class="verdict-badge" id="verdict-badge"></div>
+    <div class="result-text" id="result-text"></div>
+    <div class="roast-meter">
+      <div class="roast-meter-label">Roast Intensity</div>
+      <div class="roast-bar-track">
+        <div class="roast-bar-fill" id="roast-bar"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">Powered by questionable wisdom · Connor Corp™ · Canfield, OH</div>
+
+<script>
+async function decide() {
+  const question = document.getElementById('question').value.trim();
+  if (!question) {
+    document.getElementById('question').focus();
+    return;
+  }
+
+  const btn = document.getElementById('btn');
+  const loading = document.getElementById('loading');
+  const result = document.getElementById('result');
+
+  btn.disabled = true;
+  result.classList.remove('visible');
+  loading.classList.add('visible');
+  document.getElementById('roast-bar').style.width = '0%';
+
+  const systemPrompt = `You are Taylor's Decision Machine — a sassy, lovingly roasting oracle created by Taylor's husband Connor.
+
+Taylor has three lovable quirks you must weave into your responses:
+1. She over-researches everything (she'll spend 45 minutes on a 5-minute decision)
+2. She's chronically indecisive (needs external validation constantly)
+3. She's always cold and steals blankets (especially Connor's)
+
+You give Taylor a verdict (YES / NO / MAYBE), followed by a short, warm, funny response (3-5 sentences) that:
+- Actually answers her question helpfully
+- Includes a loving roast tied to one or more of her quirks
+- Sounds like it's written by someone who adores her but also finds her hilarious
+- Is never mean, always affectionate and playful
+- May reference Connor occasionally as her very wise, very cold, very blanket-deprived husband
+
+Respond ONLY in this exact JSON format, no markdown:
+{
+  "verdict": "YES" or "NO" or "MAYBE",
+  "response": "your funny, warm response here",
+  "roast_intensity": a number from 10 to 95 representing how spicy the roast is
+}`;
+
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{ role: "user", content: `Taylor is asking: "${question}"` }]
+      })
+    });
+
+    const data = await res.json();
+    const raw = data.content.map(b => b.text || '').join('');
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+
+    loading.classList.remove('visible');
+
+    // Verdict badge
+    const badge = document.getElementById('verdict-badge');
+    const verdictMap = {
+      YES: { emoji: '✓', label: 'Yes, go for it', cls: 'yes' },
+      NO: { emoji: '✗', label: 'Absolutely not', cls: 'no' },
+      MAYBE: { emoji: '◈', label: 'The machine is conflicted', cls: 'maybe' }
+    };
+    const v = verdictMap[parsed.verdict] || verdictMap['MAYBE'];
+    badge.className = `verdict-badge ${v.cls}`;
+    badge.innerHTML = `<span>${v.emoji}</span> ${v.label}`;
+
+    document.getElementById('result-text').textContent = parsed.response;
+    result.classList.add('visible');
+
+    // Animate roast bar
+    setTimeout(() => {
+      document.getElementById('roast-bar').style.width = `${parsed.roast_intensity}%`;
+    }, 100);
+
+  } catch (err) {
+    loading.classList.remove('visible');
+    document.getElementById('verdict-badge').className = 'verdict-badge maybe';
+    document.getElementById('verdict-badge').innerHTML = '◈ Machine Error';
+    document.getElementById('result-text').textContent = "The oracle encountered an error — which, knowing Taylor, she'll spend 30 minutes researching why.";
+    result.classList.add('visible');
+  }
+
+  btn.disabled = false;
+}
+
+document.getElementById('question').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) decide();
+});
+</script>
+</body>
+</html>
